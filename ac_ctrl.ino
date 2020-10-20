@@ -39,7 +39,7 @@ void loop() {
     Serial.print("Attempting MQTT connection...");
     if (client.connect("ESP_ac_ctrl")) {
       Serial.println("connected");
-      client.subscribe("esp32/output");
+      client.subscribe(sub_topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -51,9 +51,9 @@ void loop() {
 }
 
 void callback(char* topic, byte* message, unsigned int length) {
-  Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
-  Serial.print(". Message: ");
+  Serial.print("Topic: ");
+  Serial.println(topic);
+  Serial.print("Message: ");
   String messageTemp;
   
   for (int i = 0; i < length; i++) {
@@ -61,6 +61,8 @@ void callback(char* topic, byte* message, unsigned int length) {
     messageTemp += (char)message[i];
   }
   Serial.println();
+
+  if (topic == sub_topic && messageTemp == "CONFIG") config_ac = true;
 }
 
 void TaskIRrecv(void *pvParameters) {
@@ -83,8 +85,10 @@ void TaskIRsend(void *pvParamaters) {
   (void) pvParameters;
 
   for (;;) {
-    if (ac_configed) {
-
+    if (ac_configed || config_ac) {
+      Serial.println("yes");
+      vTaskDelay(1000);
+      config_ac = false;
     }
   }
 }

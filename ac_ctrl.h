@@ -28,6 +28,9 @@ const char* password = "31121998";
 const char* mqtt_server = "192.168.137.1";
 const int mqtt_port = 1883;
 
+const char* sub_topic = "esp32/admin/test";
+const char* pub_topic = "esp32/ac";
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
