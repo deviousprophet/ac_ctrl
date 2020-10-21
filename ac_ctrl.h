@@ -13,16 +13,12 @@
 #include <IRtext.h>
 #include <IRutils.h>
 
-#include <ir_Daikin.h>
-#include <ir_Mitsubishi.h>
-#include <ir_MitsubishiHeavy.h>
-#include <ir_NEC.h>
-#include <ir_Sharp.h>
+#include "supported_protocols.cpp"
 
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-const char* ssid = "Hotspot-LATITUDE-E6420";
+const char* ssid = "LATITUDE-E7470";
 const char* password = "31121998";
 const char* mqtt_server = "192.168.137.1";
 const int mqtt_port = 1883;
@@ -37,8 +33,8 @@ const uint32_t kBaudRate = 115200;
 const uint16_t kCaptureBufferSize = 1024;
 const uint16_t kMinUnknownSize = 12;
 
-bool config_ac = false;
 bool ac_configed = false;
+String configed_protocol;
 
 #if DECODE_AC
 const uint8_t kTimeout = 50;
@@ -46,5 +42,5 @@ const uint8_t kTimeout = 50;
 const uint8_t kTimeout = 15;
 #endif
 
-void TaskIRrecv(void *pvParamaters);
 void TaskIRsend(void *pvParamaters);
+void TaskWifi(void *pvParamaters);
