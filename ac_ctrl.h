@@ -42,5 +42,5 @@ const uint8_t kTimeout = 50;
 const uint8_t kTimeout = 15;
 #endif
 
-void TaskIRsend(void *pvParamaters);
 void TaskWifi(void *pvParamaters);
+void TaskIRsend(void *pvParamaters);

@@ -20,8 +20,8 @@ void setup() {
   WiFi.begin(ssid, password);
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);  
-  xTaskCreatePinnedToCore(TaskIRsend, "IR_send", 1024, NULL, 3, NULL, ARDUINO_RUNNING_CORE);
   xTaskCreatePinnedToCore(TaskWifi, "wifi_reconnect", 1024, NULL, 3, NULL, ARDUINO_RUNNING_CORE);
+  xTaskCreatePinnedToCore(TaskIRsend, "IR_send", 1024, NULL, 3, NULL, ARDUINO_RUNNING_CORE);
 }
 
 void loop() {
@@ -37,7 +37,7 @@ void loop() {
     }
   }
   client.loop();
-  
+
   if (irrecv.decode(&results)) {
     if (results.overflow) Serial.printf(D_WARN_BUFFERFULL "\n", kCaptureBufferSize);
     configed_protocol = resultGetProtocol(&results);
@@ -67,18 +67,6 @@ void callback(char* topic, byte* message, unsigned int length) {
   }
 }
 
-void TaskIRsend(void *pvParameters) {
-  (void) pvParameters;
-  
-  for (;;) {
-    if (ac_configed) {
-      Serial.println(configed_protocol);
-      ac_configed = false;
-    };
-    vTaskDelay(10);
-  }
-}
-
 void TaskWifi(void *pvParameters) {
   (void) pvParameters;
 
@@ -90,6 +78,18 @@ void TaskWifi(void *pvParameters) {
       Serial.println("");
       Serial.println("WiFi connected");
     }
+    vTaskDelay(10);
+  }
+}
+
+void TaskIRsend(void *pvParameters) {
+  (void) pvParameters;
+  
+  for (;;) {
+    if (ac_configed) {
+      Serial.println(configed_protocol);
+      ac_configed = false;
+    };
     vTaskDelay(10);
   }
 }
