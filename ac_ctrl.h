@@ -17,7 +17,6 @@
 #include <ir_Mitsubishi.h>
 #include <ir_MitsubishiHeavy.h>
 #include <ir_NEC.h>
-#include <ir_RC5_RC6.h>
 #include <ir_Sharp.h>
 
 #include <WiFi.h>

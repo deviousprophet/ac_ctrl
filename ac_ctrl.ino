@@ -7,9 +7,10 @@ decode_results results;
 
 void setup() {
   Serial.begin(kBaudRate);
-  while (!Serial) delay(50);
+  while(!Serial) delay(50);
   assert(irutils::lowLevelSanityCheck() == 0);
   Serial.printf("\n" D_STR_IRRECVDUMP_STARTUP "\n", kRecvPin);
+  
 #if DECODE_HASH
   irrecv.setUnknownThreshold(kMinUnknownSize);
 #endif
@@ -17,11 +18,11 @@ void setup() {
   
   delay(10);
   WiFi.begin(ssid, password);
-  client.setServer(mqtt_server, mqtt_port); 
-  client.setCallback(callback);
-  
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);  
   xTaskCreatePinnedToCore(TaskIRrecv, "IR_recv", 1024, NULL, 3, NULL, ARDUINO_RUNNING_CORE);
   xTaskCreatePinnedToCore(TaskIRsend, "IR_send", 1024, NULL, 3, NULL, ARDUINO_RUNNING_CORE);
+
 }
 
 void loop() {
@@ -54,21 +55,25 @@ void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Topic: ");
   Serial.println(topic);
   Serial.print("Message: ");
-  String messageTemp;
+  String messageTemp = "";
+  String messageTopic = (String) topic;
   
   for (int i = 0; i < length; i++) {
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
-  Serial.println();
+  Serial.println("");
 
-  if (topic == sub_topic && messageTemp == "CONFIG") config_ac = true;
+  if ((messageTopic == "esp32/admin/test") && (messageTemp == "CONFIG")) {
+    config_ac = true;
+  }
 }
 
 void TaskIRrecv(void *pvParameters) {
   (void) pvParameters;
-
+  
   for (;;) {
+    vTaskDelay(10);
     if (config_ac && irrecv.decode(&results)) {
       if (results.overflow) Serial.printf(D_WARN_BUFFERFULL "\n", kCaptureBufferSize);
       // Display the basic output of what we found.
@@ -81,13 +86,13 @@ void TaskIRrecv(void *pvParameters) {
   }
 }
 
-void TaskIRsend(void *pvParamaters) {
+void TaskIRsend(void *pvParameters) {
   (void) pvParameters;
 
   for (;;) {
-    if (ac_configed || config_ac) {
+    vTaskDelay(10);
+    if (config_ac) {
       Serial.println("yes");
-      vTaskDelay(1000);
       config_ac = false;
     }
   }
