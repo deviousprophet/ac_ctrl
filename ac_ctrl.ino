@@ -1,9 +1,7 @@
 #include "ac_ctrl.h"
-#include <iostream> 
-#include <string>
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1);
   while(!Serial) delay(50);
   assert(irutils::lowLevelSanityCheck() == 0); 
 #if DECODE_HASH
@@ -16,11 +14,11 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
-  xTaskCreate(WifiTask, "wifi_reconnect", 1024, NULL, 2, NULL);
+  xTaskCreate(WifiTask, "wifi_reconnect", 2048, NULL, 3, NULL);
 }
 
 void loop() {
-  if (!ac_configed && irrecv.decode(&results)) {
+  if (irrecv.decode(&results) && !ac_configed) {
     if (results.overflow) Serial.printf(D_WARN_BUFFERFULL "\n", 1024);
     Serial.println(configed_protocol = resultGetProtocol(&results));
     if (configed_protocol != "UNKNOWN") {
@@ -48,9 +46,13 @@ void callback(char* topic, byte* message, unsigned int length) {
     _mess += (char)message[i];
   }
   Serial.println("");
-  if ((_topic == "hotel/101/admin/ac") && (_mess == "AC_CONFIG")) ac_configed = false;
-  if ((_topic == "hotel/101/admin/ac/temp") && (stoi(_mess) >= 18) && (stoi(_mess) =< 32)) ac_temp = stoi(_mess);
-  if ((_topic == "hotel/101/admin/ac/power") && (_mess == "on") || (_mess == "off")) ac_power = _mess;
+
+  if ((_topic == AC_TOPIC) && (_mess == "AC_CONFIG"))
+    ac_configed = false;
+  if ((_topic == AC_POWER) && (_mess == "on") || (_mess == "off"))
+    ac_power = _mess;
+  if ((_topic == AC_TEMP) && (_mess.toInt() >= 18) && (_mess.toInt() <= 32))
+    ac_temp = _mess.toInt();
 }
 
 void WifiTask (void *pvParameters) {
@@ -58,9 +60,12 @@ void WifiTask (void *pvParameters) {
 
   for(;;) {
     if (WiFi.status() != WL_CONNECTED) {
-      WiFi.reconnect();
-      Serial.println("Connecting to Wifi...");
-      while (WiFi.status() != WL_CONNECTED);
+      Serial.println("Attempting Wifi connection");
+      while (WiFi.status() != WL_CONNECTED) {
+        WiFi.begin(ssid, password);
+        Serial.print(".");
+        vTaskDelay(1000);
+      }
       Serial.println("");
       Serial.println("WiFi connected");
     }
