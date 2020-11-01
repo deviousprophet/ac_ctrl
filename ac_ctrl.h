@@ -7,11 +7,19 @@
 #include <IRtext.h>
 #include <IRutils.h>
 
+#include <ir_Daikin.h>
+#include <ir_Mitsubishi.h>
+#include <ir_Toshiba.h>
+#include <ir_Sharp.h>
+
 #include <WiFi.h>
 #include <PubSubClient.h>
 
+#define ANALOG_CURRENT_PIN  32
+
 #define ROOM        "101"
 #define AC_TOPIC    "hotel/" ROOM "/admin/ac"
+#define AC_PROTOCOL "hotel/" ROOM "/admin/ac/protocol"
 #define AC_POWER    "hotel/" ROOM "/admin/ac/power"
 #define AC_TEMP     "hotel/" ROOM "/admin/ac/temp"
 
@@ -19,8 +27,8 @@ const uint16_t RecvPin = 12;
 const uint16_t SendPin = 14;
 
 String  configed_protocol;
-String  ac_power;
-int     ac_temp;
+bool    ac_power = false;
+uint8_t ac_temp = 25;
 bool    ac_configed = false;
 bool    ir_send = false;
 
