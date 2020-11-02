@@ -37,9 +37,9 @@ void loop() {
     yield();
   }
   if (ac_configed && ir_send) {
-    Serial.println("send");
     send2ac();
-    Serial.println("send2");
+    ir_send = false;
+    delay(500);
   }
   client.loop();
 }
@@ -57,12 +57,17 @@ void callback(char* topic, byte* message, unsigned int length) {
   }
   Serial.println("");
 
-  if ((_topic == AC_TOPIC) && (_mess == "AC_CONFIG"))
+  if ((_topic == AC_TOPIC) && (_mess == "AC_CONFIG")) {
+    ac_power = false;
+    ac_power_prev = false;
+    ac_temp = 25;
     ac_configed = false;
+  }
 
   if (_topic == AC_PROTOCOL) configed_protocol = _mess;
 
   if ((_topic == AC_POWER) && (_mess == "on") || (_mess == "off")) {
+    ac_power_prev = ac_power;
     if (_mess == "on") ac_power = true;
     else ac_power = false;
     ir_send = true;
@@ -191,7 +196,21 @@ void send2ac() {
     Serial.println(ac.toString());
     ac.send();
   }
-// END DAIKIN AC
+// END DAIKIN
+//
+// LG
+
+  else if (configed_protocol == "LG") {
+    IRLgAc ac(SendPin);
+    ac.setPower(ac_power);
+    ac.setTemp(ac_temp);
+    ac.setFan(kLgAcFanAuto);
+    ac.setMode(kLgAcAuto);
+    Serial.println(ac.toString());
+    ac.send();
+  }
+
+// END LG
 //
 // MITSUBISHI
   else if (configed_protocol == "MITSUBISHI_AC") {
@@ -248,24 +267,26 @@ void send2ac() {
     IRMitsubishiHeavy88Ac ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan();
-    ac.setMode();
+    ac.setFan(kMitsubishiHeavy88FanAuto);
+    ac.setMode(kMitsubishiHeavyAuto);
+    ac.setSwingVertical(kMitsubishiHeavy88SwingVAuto);
+    ac.setSwingHorizontal(kMitsubishiHeavy88SwingHAuto);
     Serial.println(ac.toString());
     ac.send();
   }
-
-  else if (configed_protocol == "MITSUBISHI112") {
-    IRMitsubishi112 ac(SendPin);
-    ac.setPower(ac_power);
-    ac.setTemp(ac_temp);
-    ac.setFan();
-    ac.setMode();
-    Serial.println(ac.toString());
-    ac.send();
-  }
-  
 
 // END MITSUBISHI HEAVY
-  ir_send = false;
-  delay(500);
+//
+// SHARP
+
+  else if (configed_protocol == "SHARP_AC") {
+    IRSharpAc ac(SendPin);
+    ac.setPower(ac_power, ac_power_prev);
+    ac.setTemp(ac_temp);
+    ac.setFan(kSharpAcFanAuto);
+    ac.setMode(kSharpAcCool);
+    ac.setSwingToggle(true);
+    Serial.println(ac.toString());
+    ac.send();
+  }
 }

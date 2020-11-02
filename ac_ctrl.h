@@ -8,8 +8,9 @@
 #include <IRutils.h>
 
 #include <ir_Daikin.h>
+#include <ir_LG.h>
 #include <ir_Mitsubishi.h>
-#include <ir_Toshiba.h>
+#include <ir_MitsubishiHeavy.h>
 #include <ir_Sharp.h>
 
 #include <WiFi.h>
@@ -28,6 +29,7 @@ const uint16_t SendPin = 14;
 
 String  configed_protocol;
 bool    ac_power = false;
+bool    ac_power_prev = false;
 uint8_t ac_temp = 25;
 bool    ac_configed = false;
 bool    ir_send = false;
