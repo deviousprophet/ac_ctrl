@@ -20,6 +20,9 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
+  pinMode(SendPin, OUTPUT);
+  digitalWrite(SendPin, LOW);
+
   xTaskCreate(WifiTask, "wifi_reconnect", 2048, NULL, 2, NULL);
   xTaskCreate(CurrentMeasure, "current_measure", 2048, NULL, 1, NULL);
 }
@@ -64,7 +67,10 @@ void callback(char* topic, byte* message, unsigned int length) {
     ac_configed = false;
   }
 
-  if (_topic == AC_PROTOCOL) configed_protocol = _mess;
+  if (_topic == AC_PROTOCOL) {
+    configed_protocol = _mess;
+    ac_configed = true;
+  }
 
   if ((_topic == AC_POWER) && (_mess == "on") || (_mess == "off")) {
     ac_power_prev = ac_power;
@@ -85,6 +91,7 @@ void WifiTask (void *pvParameters) {
   for(;;) {
     if (WiFi.status() != WL_CONNECTED) {
       WiFi.reconnect();
+      while(WiFi.status() != WL_CONNECTED) vTaskDelay(100);
     }
     if (!client.connected() && (WiFi.status() == WL_CONNECTED)) {
       Serial.println("Attempting MQTT connection...");
