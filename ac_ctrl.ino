@@ -45,6 +45,7 @@ void loop() {
     if (results.overflow) Serial.printf(D_WARN_BUFFERFULL "\n", 1024);
     Serial.println(configed_protocol = resultGetProtocol(&results));
     if (check_supported_protocol(configed_protocol)) ac_configed = true;
+    else Serial.println("Unknown or currently not supported!");
     // Display any extra A/C info if we have it.
     String description = IRAcUtils::resultAcToString(&results);
     if (description.length()) Serial.println(D_STR_MESGDESC ": " + description);
@@ -161,8 +162,8 @@ void CurrentMeasure (void *pvParameter) {
 bool check_supported_protocol(String protocol) {
   for (int i = 0; i < 15; i++) {
     if (protocol == supported_protocol[i]) return true;
-    else return false;
   }
+  return false;
 }
 
 void send2ac() {
