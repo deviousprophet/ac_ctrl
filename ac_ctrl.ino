@@ -100,11 +100,11 @@ void WifiTask (void *pvParameters) {
 
 void CurrentMeasure (void *pvParameter) {
   (void) pvParameter;
-
+  float maxCurrent = 30;
   for (;;) {
     int val = analogRead(ANALOG_CURRENT_PIN);
-    float adc = (float)val*3.3/4095;
-    vTaskDelay(10);
+    float adc = (float)val*maxCurrent/4095;
+    vTaskDelay(100);
   }
 }
 
