@@ -20,8 +20,8 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
-  pinMode(SendPin, OUTPUT);
-  digitalWrite(SendPin, LOW);
+  pinMode(SEND_PIN, OUTPUT);
+  digitalWrite(SEND_PIN, LOW);
 
   xTaskCreate(WifiTask, "wifi_reconnect", 2048, NULL, 2, NULL);
   xTaskCreate(CurrentMeasure, "current_measure", 2048, NULL, 1, NULL);
@@ -96,12 +96,20 @@ void WifiTask (void *pvParameters) {
   }
 }
 
+void adc_init() {
+  adc1_config_width(ADC_WIDTH_12Bit);
+  adc1_config_channel_atten(get_adc1_chanel(ANALOG_CURRENT_PIN), ADC_ATTEN_6db);
+}
+
 void CurrentMeasure (void *pvParameter) {
   (void) pvParameter;
-  float maxCurrent = 30;
+  
+  float max_lim_current = 30;
+  adc_init();
+
   for (;;) {
     int val = analogRead(ANALOG_CURRENT_PIN);
-    float adc = (float)val*maxCurrent/4095;
+    float current = (float) val*max_lim_current/4095;
     vTaskDelay(100);
   }
 }
@@ -116,7 +124,7 @@ bool check_supported_protocol(String protocol) {
 void send2ac() {
   // DAIKIN AC
   if (configed_protocol == "DAIKIN") {
-    IRDaikinESP ac(SendPin);
+    IRDaikinESP ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -127,7 +135,7 @@ void send2ac() {
     ac.send();
   }
   else if (configed_protocol == "DAIKIN2") {
-    IRDaikin2 ac(SendPin);
+    IRDaikin2 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -137,7 +145,7 @@ void send2ac() {
     ac.send();
   }
   else if (configed_protocol == "DAIKIN216") {
-    IRDaikin216 ac(SendPin);
+    IRDaikin216 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -148,7 +156,7 @@ void send2ac() {
     ac.send();
   }
   else if (configed_protocol == "DAIKIN160") {
-    IRDaikin160 ac(SendPin);
+    IRDaikin160 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -159,7 +167,7 @@ void send2ac() {
   }
 
   else if (configed_protocol == "DAIKIN176") {
-    IRDaikin176 ac(SendPin);
+    IRDaikin176 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -169,7 +177,7 @@ void send2ac() {
     ac.send();
   }
   else if (configed_protocol == "DAIKIN128") {
-    IRDaikin128 ac(SendPin);
+    IRDaikin128 ac(SEND_PIN);
     ac.setPowerToggle(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -179,7 +187,7 @@ void send2ac() {
     ac.send();
   }
   else if (configed_protocol == "DAIKIN152") {
-    IRDaikin152 ac(SendPin);
+    IRDaikin152 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -189,7 +197,7 @@ void send2ac() {
     ac.send();
   }
   else if (configed_protocol == "DAIKIN64") {
-    IRDaikin64 ac(SendPin);
+    IRDaikin64 ac(SEND_PIN);
     ac.setPowerToggle(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -203,7 +211,7 @@ void send2ac() {
 // LG
 
   else if (configed_protocol == "LG") {
-    IRLgAc ac(SendPin);
+    IRLgAc ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -216,7 +224,7 @@ void send2ac() {
 //
 // MITSUBISHI
   else if (configed_protocol == "MITSUBISHI_AC") {
-    IRMitsubishiAC ac(SendPin);
+    IRMitsubishiAC ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -227,7 +235,7 @@ void send2ac() {
   }
 
   else if (configed_protocol == "MITSUBISHI136") {
-    IRMitsubishi136 ac(SendPin);
+    IRMitsubishi136 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -238,7 +246,7 @@ void send2ac() {
   }
 
   else if (configed_protocol == "MITSUBISHI112") {
-    IRMitsubishi112 ac(SendPin);
+    IRMitsubishi112 ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -254,7 +262,7 @@ void send2ac() {
 // MITSUBISHI HEAVY
 
   else if (configed_protocol == "MITSUBISHI_HEAVY_152") {
-    IRMitsubishiHeavy152Ac ac(SendPin);
+    IRMitsubishiHeavy152Ac ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -266,7 +274,7 @@ void send2ac() {
   }
 
   else if (configed_protocol == "MITSUBISHI_HEAVY_88") {
-    IRMitsubishiHeavy88Ac ac(SendPin);
+    IRMitsubishiHeavy88Ac ac(SEND_PIN);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);
@@ -282,7 +290,7 @@ void send2ac() {
 // SHARP
 
   else if (configed_protocol == "SHARP_AC") {
-    IRSharpAc ac(SendPin);
+    IRSharpAc ac(SEND_PIN);
     ac.setPower(ac_power, ac_power_prev);
     ac.setTemp(ac_temp);
     ac.setFan(ac_fan);

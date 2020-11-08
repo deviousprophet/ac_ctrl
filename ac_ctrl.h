@@ -17,6 +17,8 @@
 #include <PubSubClient.h>
 
 #define ANALOG_CURRENT_PIN  32
+#define RECV_PIN            12
+#define SEND_PIN            14
 
 #define ROOM        "101"
 #define AC_TOPIC    "hotel/" ROOM "/admin/ac"
@@ -42,9 +44,6 @@ String supported_protocol[15] = (
     "MITSUBISHI_HEAVY_88",
     "SHARP");
 
-const uint16_t RecvPin = 12;
-const uint16_t SendPin = 14;
-
 String  configed_protocol;
 bool    ac_configed = false;
 bool    ir_send = false;
@@ -63,7 +62,7 @@ const uint8_t kTimeout = 50;
 const uint8_t kTimeout = 15;
 #endif
 
-IRrecv irrecv(RecvPin, kCaptureBufferSize, kTimeout, true);
+IRrecv irrecv(RECV_PIN, kCaptureBufferSize, kTimeout, true);
 decode_results results;
 
 const char* ssid = "LATITUDE-E7470";
