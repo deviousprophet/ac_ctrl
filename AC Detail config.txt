@@ -1,15 +1,12 @@
-Topic										cmd (string)		Action
-
-"hotel/" ROOM "/admin/ac"					AC_CONFIG			reset to re-config (admin)
-"hotel/" ROOM "/admin/ac/protocol"			<Protocol name>		config protocol (admin)
-"hotel/" ROOM "/admin/ac/power"				on/off
-"hotel/" ROOM "/admin/ac/temp"				<celsius temp>
-
+Topic									cmd (string)		Action
+"hotel/" ROOM "/admin/ac"						AC_CONFIG		reset all and wait for IR recv (admin)
+"hotel/" ROOM "/admin/ac/protocol"					<Protocol>		config protocol (admin)
+"hotel/" ROOM "/admin/ac/power"						on/off
+"hotel/" ROOM "/admin/ac/temp"						<celsius temp>
 "hotel/" ROOM "/admin/ac/fan"
-
-Protocol				Fan					cmd (string)
-DAIKIN				1 -> 5				1 -> 5
-DAIKIN2				kDaikinFanAuto			auto
+Protocol				Fan
+DAIKIN					1 -> 5				1 -> 5
+DAIKIN2					kDaikinFanAuto			auto
 DAIKIN160				kDaikinFanQuiet			quiet
 DAIKIN216
 DAIKIN152
@@ -18,15 +15,15 @@ DAIKIN176				1 -> 3				1 -> 3
 		
 DAIKIN128				kDaikin128FanAuto		auto
 					kDaikin128FanHigh		3
-					kDaikin128FanMed			2
-					kDaikin128FanLow			1
+					kDaikin128FanMed		2
+					kDaikin128FanLow		1
 					kDaikin128FanPowerful		powerful
 					kDaikin128FanQuiet		quiet
 					
 DAIKIN64				kDaikin64FanQuiet		quiet
 					kDaikin64FanTurbo		turbo
-					kDaikin64FanAuto			auto
-					kDaikin64FanHigh			3
+					kDaikin64FanAuto		auto
+					kDaikin64FanHigh		3
 					kDaikin64FanMed			2
 					kDaikin64FanLow			1
 					
@@ -36,23 +33,23 @@ LG					kLgAcFanAuto			auto
 					kLgAcFanMedium			3
 					kLgAcFanHigh			4
 					
-MITSUBISHI_AC			Auto 0				0
+MITSUBISHI_AC				Auto 0				0
 					1 -> 5				1 -> 5
 					Quite 6				quiet
 		
-MITSUBISHI136			0 -> 3				0 -> 3
+MITSUBISHI136				0 -> 3				0 -> 3
 		
-MITSUBISHI112			kMitsubishi112FanMin		1
+MITSUBISHI112				kMitsubishi112FanMin		1
 					kMitsubishi112FanLow		2
 					kMitsubishi112FanMed		3
 					kMitsubishi112FanMax		4
 					
-MITSUBISHI_HEAVY_152		Auto 0				auto
+MITSUBISHI_HEAVY_152			Auto 0				auto
 					1 -> 4				1 -> 4
 					Econo 6				econo
 					Turbo 8				turbo
 					
-MITSUBISHI_HEAVY_88		Auto 0				auto
+MITSUBISHI_HEAVY_88			Auto 0				auto
 					2 -> 4				2 -> 4
 					Turbo 6				turbo
 					Econo 7				econo
