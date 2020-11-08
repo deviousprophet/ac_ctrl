@@ -23,8 +23,21 @@ void setup() {
   pinMode(SEND_PIN, OUTPUT);
   digitalWrite(SEND_PIN, LOW);
 
-  xTaskCreate(WifiTask, "wifi_reconnect", 2048, NULL, 2, NULL);
-  xTaskCreate(CurrentMeasure, "current_measure", 2048, NULL, 1, NULL);
+  xTaskCreate(
+    WifiTask,
+    "wifi_reconnect",
+    2048,
+    NULL,
+    2,
+    NULL);
+    
+  xTaskCreate(
+    CurrentMeasure,
+    "current_measure",
+    2048,
+    NULL,
+    1,
+    NULL);
 }
 
 void loop() {
@@ -101,6 +114,37 @@ void adc_init() {
   adc1_config_channel_atten(get_adc1_chanel(ANALOG_CURRENT_PIN), ADC_ATTEN_6db);
 }
 
+adc1_channel_t get_adc1_chanel(uint8_t pin) {
+  adc1_channel_t channel;
+  switch (pin) {
+    case 32:
+      channel = ADC1_CHANNEL_4;
+      break;
+    case 33:
+      channel = ADC1_CHANNEL_5;
+      break;
+    case 34:
+      channel = ADC1_CHANNEL_6;
+      break;
+    case 35:
+      channel = ADC1_CHANNEL_7;
+      break;
+    case 36:
+      channel = ADC1_CHANNEL_0;
+      break;
+    case 37:
+      channel = ADC1_CHANNEL_1;
+      break;
+    case 38:
+      channel = ADC1_CHANNEL_2;
+      break;
+    case 39:
+      channel = ADC1_CHANNEL_3;
+      break;
+  }
+  return channel;
+}
+
 void CurrentMeasure (void *pvParameter) {
   (void) pvParameter;
   
@@ -115,7 +159,7 @@ void CurrentMeasure (void *pvParameter) {
 }
 
 bool check_supported_protocol(String protocol) {
-  for (i = 0; i < 15; i++) {
+  for (int i = 0; i < 15; i++) {
     if (protocol == supported_protocol[i]) return true;
     else return false;
   }
