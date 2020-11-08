@@ -31,9 +31,7 @@ void loop() {
   if (irrecv.decode(&results) && !ac_configed) {
     if (results.overflow) Serial.printf(D_WARN_BUFFERFULL "\n", 1024);
     Serial.println(configed_protocol = resultGetProtocol(&results));
-    if (configed_protocol != "UNKNOWN") {
-      ac_configed = true;
-    }
+    if (check_supported_protocol(configed_protocol)) ac_configed = true;
     // Display any extra A/C info if we have it.
     String description = IRAcUtils::resultAcToString(&results);
     if (description.length()) Serial.println(D_STR_MESGDESC ": " + description);
@@ -105,6 +103,13 @@ void CurrentMeasure (void *pvParameter) {
     int val = analogRead(ANALOG_CURRENT_PIN);
     float adc = (float)val*maxCurrent/4095;
     vTaskDelay(100);
+  }
+}
+
+bool check_supported_protocol(String protocol) {
+  for (i = 0; i < 15; i++) {
+    if (protocol == supported_protocol[i]) return true;
+    else return false;
   }
 }
 
@@ -379,7 +384,10 @@ void ac_data(String _topic, String _mess) {
       else ac_fan = 0;  // Auto
     }
     // MITSUBISHI136
-    if ((configed_protocol = "MITSUBISHI136") && (intMess >= 0) && (intMess <= 3)) ac_fan = intMess;
+    if (configed_protocol = "MITSUBISHI136") {
+      if ((intMess >= 0) && (intMess <= 3)) ac_fan = intMess;
+      else ac_fan = 1;     
+    }
     // MITSUBISHI112
     if (configed_protocol = "MITSUBISHI112") {
       switch (intMess) {

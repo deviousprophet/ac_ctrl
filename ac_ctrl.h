@@ -25,6 +25,23 @@
 #define AC_TEMP     "hotel/" ROOM "/admin/ac/temp"
 #define AC_FAN      "hotel/" ROOM "/admin/ac/fan"
 
+String supported_protocol[15] = (
+    "DAIKIN",
+    "DAIKIN2",
+    "DAIKIN160",
+    "DAIKIN216",
+    "DAIKIN152",
+    "DAIKIN176",
+    "DAIKIN128",
+    "DAIKIN64",
+    "LG",
+    "MITSUBISHI_AC",
+    "MITSUBISHI136",
+    "MITSUBISHI112",
+    "MITSUBISHI_HEAVY_152",
+    "MITSUBISHI_HEAVY_88",
+    "SHARP");
+
 const uint16_t RecvPin = 12;
 const uint16_t SendPin = 14;
 
