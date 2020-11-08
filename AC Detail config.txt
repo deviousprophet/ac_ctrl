@@ -1,8 +1,11 @@
-AC_TOPIC    "hotel/" ROOM "/admin/ac"
-AC_PROTOCOL "hotel/" ROOM "/admin/ac/protocol"
-AC_POWER    "hotel/" ROOM "/admin/ac/power"
-AC_TEMP     "hotel/" ROOM "/admin/ac/temp"
-AC_FAN      "hotel/" ROOM "/admin/ac/fan"
+Topic										cmd (string)		Action
+
+"hotel/" ROOM "/admin/ac"					AC_CONFIG			reset to re-config (admin)
+"hotel/" ROOM "/admin/ac/protocol"			<Protocol name>		config protocol (admin)
+"hotel/" ROOM "/admin/ac/power"				on/off
+"hotel/" ROOM "/admin/ac/temp"				<celsius temp>
+
+"hotel/" ROOM "/admin/ac/fan"
 
 Protocol				Fan					cmd (string)
 DAIKIN				1 -> 5				1 -> 5
