@@ -59,7 +59,7 @@ void callback(char* topic, byte* message, unsigned int length) {
     _mess += (char)message[i];
   }
   Serial.println("");
-
+  
   if ((_topic == AC_TOPIC) && (_mess == "AC_CONFIG")) {
     ac_power = false;
     ac_power_prev = false;
@@ -72,17 +72,7 @@ void callback(char* topic, byte* message, unsigned int length) {
     ac_configed = true;
   }
 
-  if ((_topic == AC_POWER) && (_mess == "on") || (_mess == "off")) {
-    ac_power_prev = ac_power;
-    if (_mess == "on") ac_power = true;
-    else ac_power = false;
-    ir_send = true;
-  }
-
-  if ((_topic == AC_TEMP) && (_mess.toInt() >= 18) && (_mess.toInt() <= 32)) {
-    ac_temp = (uint8_t) _mess.toInt();
-    ir_send = true;
-  }
+  if (ac_configed) ac_data(_topic, _mess);
 }
 
 void WifiTask (void *pvParameters) {
@@ -124,8 +114,8 @@ void send2ac() {
     IRDaikinESP ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikinFanAuto);
-    ac.setMode(kDaikinAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikinCool);
     ac.setSwingVertical(true);
     ac.setSwingHorizontal(true);
     Serial.println(ac.toString());
@@ -135,8 +125,8 @@ void send2ac() {
     IRDaikin2 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikinFanAuto);
-    ac.setMode(kDaikinAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikinCool);
     ac.setSwingVertical(kDaikin2SwingVAuto);
     Serial.println(ac.toString());
     ac.send();
@@ -145,8 +135,8 @@ void send2ac() {
     IRDaikin216 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikinFanAuto);
-    ac.setMode(kDaikinAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikinCool);
     ac.setSwingVertical(true);
     ac.setSwingHorizontal(true);
     Serial.println(ac.toString());
@@ -156,8 +146,8 @@ void send2ac() {
     IRDaikin160 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikinFanAuto);
-    ac.setMode(kDaikinAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikinCool);
     ac.setSwingVertical(kDaikin160SwingVAuto);
     Serial.println(ac.toString());
     ac.send();
@@ -167,8 +157,8 @@ void send2ac() {
     IRDaikin176 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setMode(kDaikin176Auto);
-    ac.setFan(kDaikin176FanMax);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikin176Cool);
     ac.setSwingHorizontal(kDaikin176SwingHAuto);
     Serial.println(ac.toString());
     ac.send();
@@ -177,8 +167,8 @@ void send2ac() {
     IRDaikin128 ac(SendPin);
     ac.setPowerToggle(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikin128FanAuto);
-    ac.setMode(kDaikin128Auto);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikin128Cool);
     ac.setSwingVertical(true);
     Serial.println(ac.toString());
     ac.send();
@@ -187,8 +177,8 @@ void send2ac() {
     IRDaikin152 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikinFanAuto);
-    ac.setMode(kDaikinAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kDaikinCool);
     ac.setSwingV(true);
     Serial.println(ac.toString());
     ac.send();
@@ -197,7 +187,7 @@ void send2ac() {
     IRDaikin64 ac(SendPin);
     ac.setPowerToggle(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kDaikin64FanAuto);
+    ac.setFan(ac_fan);
     ac.setMode(kDaikin64Cool);
     ac.setSwingVertical(true);
     Serial.println(ac.toString());
@@ -211,8 +201,8 @@ void send2ac() {
     IRLgAc ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kLgAcFanAuto);
-    ac.setMode(kLgAcAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kLgAcCool);
     Serial.println(ac.toString());
     ac.send();
   }
@@ -224,8 +214,8 @@ void send2ac() {
     IRMitsubishiAC ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kMitsubishiAcFanAuto);
-    ac.setMode(kMitsubishiAcAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kMitsubishiAcCool);
     ac.setVane(kMitsubishiAcVaneAuto);
     Serial.println(ac.toString());
     ac.send();
@@ -235,8 +225,8 @@ void send2ac() {
     IRMitsubishi136 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kMitsubishi136FanMed);
-    ac.setMode(kMitsubishi136Auto);
+    ac.setFan(ac_fan);
+    ac.setMode(kMitsubishi136Cool);
     ac.setSwingV(kMitsubishi136SwingVAuto);
     Serial.println(ac.toString());
     ac.send();
@@ -246,8 +236,8 @@ void send2ac() {
     IRMitsubishi112 ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kMitsubishi112FanMed);
-    ac.setMode(kMitsubishi112Auto);
+    ac.setFan(ac_fan);
+    ac.setMode(kMitsubishi112Cool);
     ac.setSwingV(kMitsubishi112SwingVAuto);
     ac.setSwingH(kMitsubishi112SwingHAuto);
     Serial.println(ac.toString());
@@ -262,8 +252,8 @@ void send2ac() {
     IRMitsubishiHeavy152Ac ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kMitsubishiHeavy152FanAuto);
-    ac.setMode(kMitsubishiHeavyAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kMitsubishiHeavyCool);
     ac.setSwingVertical(kMitsubishiHeavy152SwingVAuto);
     ac.setSwingHorizontal(kMitsubishiHeavy152SwingHAuto);
     Serial.println(ac.toString());
@@ -274,8 +264,8 @@ void send2ac() {
     IRMitsubishiHeavy88Ac ac(SendPin);
     ac.setPower(ac_power);
     ac.setTemp(ac_temp);
-    ac.setFan(kMitsubishiHeavy88FanAuto);
-    ac.setMode(kMitsubishiHeavyAuto);
+    ac.setFan(ac_fan);
+    ac.setMode(kMitsubishiHeavyCool);
     ac.setSwingVertical(kMitsubishiHeavy88SwingVAuto);
     ac.setSwingHorizontal(kMitsubishiHeavy88SwingHAuto);
     Serial.println(ac.toString());
@@ -290,10 +280,161 @@ void send2ac() {
     IRSharpAc ac(SendPin);
     ac.setPower(ac_power, ac_power_prev);
     ac.setTemp(ac_temp);
-    ac.setFan(kSharpAcFanAuto);
+    ac.setFan(ac_fan);
     ac.setMode(kSharpAcCool);
     ac.setSwingToggle(true);
     Serial.println(ac.toString());
     ac.send();
+  }
+}
+
+void ac_data(String _topic, String _mess) {
+  int intMess = _mess.toInt();
+  if (_topic == AC_POWER) {
+    ac_power_prev = ac_power;
+    if (_mess == "on") ac_power = true;
+    else ac_power = false;
+    ir_send = true;
+  }
+
+  if (_topic == AC_TEMP) {
+    ac_temp = (uint8_t) _mess.toInt();
+    ir_send = true;
+  }
+  if (_topic == AC_FAN) {
+
+    // DAIKIN, DAIKIN2, DAIKIN152, DAIKIN160, DAIKIN216
+    if ((configed_protocol == "DAIKIN") || (configed_protocol == "DAIKIN2") || (configed_protocol == "DAIKIN152") || (configed_protocol == "DAIKIN160") || (configed_protocol == "DAIKIN216")) {
+      if ((intMess >= 1) && (intMess <= 5)) ac_fan = intMess;
+      else if (_mess = "quiet") ac_fan = kDaikinFanQuiet;
+      else ac_fan = kDaikinFanAuto;
+    }
+    // DAIKIN176
+    if (configed_protocol = "DAIKIN176") {
+      if ((intMess >= 1) && (intMess <= 3)) ac_fan = intMess;
+      else ac_fan = 3;  // FanMax
+    }
+    // DAIKIN128
+    if (configed_protocol = "DAIKIN128") {
+      if (_mess = "powerful") ac_fan = kDaikin128FanPowerful;
+      else if (_mess = "quiet") ac_fan = kDaikin128FanQuiet;
+      else switch (intMess) {
+            case 1:
+              ac_fan = kDaikin128FanLow;
+              break;
+            case 2:
+              ac_fan = kDaikin128FanMed;
+              break;
+            case 3:
+              ac_fan = kDaikin128FanHigh;
+              break;
+            default:
+              ac_fan = kDaikin128FanAuto;
+              break;
+            }
+    }
+    // DAIKIN64
+    if (configed_protocol = "DAIKIN64") {
+      if (_mess = "quiet") ac_fan = kDaikin64FanQuiet;
+      else if (_mess = "turbo") ac_fan = kDaikin64FanTurbo;
+      else switch (intMess) {
+            case 1:
+              ac_fan = kDaikin64FanLow;
+              break;
+            case 2:
+              ac_fan = kDaikin64FanMed;
+              break;
+            case 3:
+              ac_fan = kDaikin64FanHigh;
+              break;
+            default:
+              ac_fan = kDaikin64FanAuto;
+              break;
+            }
+    }
+    // LG
+    if (configed_protocol = "LG") {
+      switch (intMess) {
+        case 1:
+          ac_fan = kLgAcFanLowest;
+          break;
+        case 2:
+          ac_fan = kLgAcFanLow;
+          break;
+        case 3:
+          ac_fan = kLgAcFanMedium;
+          break;
+        case 4:
+          ac_fan = kLgAcFanHigh;
+          break;
+        default:
+          ac_fan = kLgAcFanAuto;
+          break;
+      }
+    }
+    // MITSUBISHI_AC
+    if (configed_protocol = "MITSUBISHI_AC") {
+      if ((intMess >= 1) && (intMess <= 5)) ac_fan = intMess;
+      else if (_mess = "quiet") ac_fan = 6;
+      else ac_fan = 0;  // Auto
+    }
+    // MITSUBISHI136
+    if ((configed_protocol = "MITSUBISHI136") && (intMess >= 0) && (intMess <= 3)) ac_fan = intMess;
+    // MITSUBISHI112
+    if (configed_protocol = "MITSUBISHI112") {
+      switch (intMess) {
+        case 1:
+          ac_fan = kMitsubishi112FanMin;
+          break;
+        case 2:
+          ac_fan = kMitsubishi112FanLow;
+          break;
+        case 3:
+          ac_fan = kMitsubishi112FanMed;
+          break;
+        case 4:
+          ac_fan = kMitsubishi112FanMax;
+          break;
+        default:
+          ac_fan = kMitsubishi112FanLow;
+          break;
+        }
+    }
+    // MITSUBISHI_HEAVY_152
+    if (configed_protocol = "MITSUBISHI_HEAVY_152") {
+      if ((intMess >= 1) && (intMess <= 4)) ac_fan = intMess;
+      else if (_mess = "econo") ac_fan = 6;
+      else if (_mess = "turbo") ac_fan = 8;
+      else ac_fan = 0;  // Auto
+    }
+    // MITSUBISHI_HEAVY_88
+    if (configed_protocol = "MITSUBISHI_HEAVY_88") {
+      if ((intMess >= 2) && (intMess <= 4)) ac_fan = intMess;
+      else if (_mess = "econo") ac_fan = 7;
+      else if (_mess = "turbo") ac_fan = 6;
+      else ac_fan = 0;  // Auto
+    }
+    // SHARP
+    if (configed_protocol = "SHARP") {
+      switch (intMess) {
+        case 1:
+          ac_fan = kSharpAcFanMin;
+          break;
+        case 2:
+          ac_fan = kSharpAcFanMed;
+          break;
+        case 3:
+          ac_fan = kSharpAcFanHigh;
+          break;
+        case 4:
+          ac_fan = kSharpAcFanMax;
+          break;
+        default:
+          ac_fan = kSharpAcFanAuto;
+          break;
+        }
+    }
+
+    ir_send = true;
   }
 }

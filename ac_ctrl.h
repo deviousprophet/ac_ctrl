@@ -23,16 +23,19 @@
 #define AC_PROTOCOL "hotel/" ROOM "/admin/ac/protocol"
 #define AC_POWER    "hotel/" ROOM "/admin/ac/power"
 #define AC_TEMP     "hotel/" ROOM "/admin/ac/temp"
+#define AC_FAN      "hotel/" ROOM "/admin/ac/fan"
 
 const uint16_t RecvPin = 12;
 const uint16_t SendPin = 14;
 
 String  configed_protocol;
+bool    ac_configed = false;
+bool    ir_send = false;
+
 bool    ac_power = false;
 bool    ac_power_prev = false;
 uint8_t ac_temp = 25;
-bool    ac_configed = false;
-bool    ir_send = false;
+uint8_t ac_fan;
 
 const uint32_t kBaudRate = 115200;
 const uint16_t kCaptureBufferSize = 1024;
