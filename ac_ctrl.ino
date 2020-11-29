@@ -110,52 +110,11 @@ void WifiTask (void *pvParameters) {
   }
 }
 
-void adc_init() {
-  adc1_config_width(ADC_WIDTH_12Bit);
-  adc1_config_channel_atten(get_adc1_chanel(ANALOG_CURRENT_PIN), ADC_ATTEN_6db);
-}
-
-adc1_channel_t get_adc1_chanel(uint8_t pin) {
-  adc1_channel_t channel;
-  switch (pin) {
-    case 32:
-      channel = ADC1_CHANNEL_4;
-      break;
-    case 33:
-      channel = ADC1_CHANNEL_5;
-      break;
-    case 34:
-      channel = ADC1_CHANNEL_6;
-      break;
-    case 35:
-      channel = ADC1_CHANNEL_7;
-      break;
-    case 36:
-      channel = ADC1_CHANNEL_0;
-      break;
-    case 37:
-      channel = ADC1_CHANNEL_1;
-      break;
-    case 38:
-      channel = ADC1_CHANNEL_2;
-      break;
-    case 39:
-      channel = ADC1_CHANNEL_3;
-      break;
-  }
-  return channel;
-}
-
 void CurrentMeasure (void *pvParameter) {
   (void) pvParameter;
-  
-  float max_lim_current = 30;
-  adc_init();
 
   for (;;) {
-    int val = analogRead(ANALOG_CURRENT_PIN);
-    float current = (float) val*max_lim_current/4095;
-    vTaskDelay(100);
+    vTaskDelay(10);
   }
 }
 
