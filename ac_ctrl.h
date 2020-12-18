@@ -17,9 +17,6 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-#include "esp_adc_cal.h"
-#include "driver/adc.h"
-
 #define ANALOG_CURRENT_PIN  32
 #define RECV_PIN            12
 #define SEND_PIN            14
