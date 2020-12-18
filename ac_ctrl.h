@@ -15,6 +15,7 @@
 
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #include "esp_adc_cal.h"
 #include "driver/adc.h"
@@ -24,11 +25,6 @@
 #define SEND_PIN            14
 
 #define ROOM        "101"
-#define AC_TOPIC    "hotel/" ROOM "/admin/ac"
-#define AC_PROTOCOL "hotel/" ROOM "/admin/ac/protocol"
-#define AC_POWER    "hotel/" ROOM "/admin/ac/power"
-#define AC_TEMP     "hotel/" ROOM "/admin/ac/temp"
-#define AC_FAN      "hotel/" ROOM "/admin/ac/fan"
 
 String supported_protocol[15] = (
     "DAIKIN",
@@ -73,8 +69,8 @@ const char* password = "31121998";
 const char* mqtt_server = "192.168.137.1";
 const int   mqtt_port = 1883;
 
-const char* sub_topic = "hotel/101/admin/ac/#";
-const char* pub_topic = "hotel/101/ac";
+const char* sub_topic = "json/request";
+const char* pub_topic = "json/respond";
 
 WiFiClient espClient;
 PubSubClient client(espClient);

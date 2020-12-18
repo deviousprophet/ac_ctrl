@@ -30,14 +30,6 @@ void setup() {
     NULL,
     2,
     NULL);
-    
-  xTaskCreate(
-    CurrentMeasure,
-    "current_measure",
-    2048,
-    NULL,
-    1,
-    NULL);
 }
 
 void loop() {
@@ -60,31 +52,34 @@ void loop() {
 }
 
 void callback(char* topic, byte* message, unsigned int length) {
-  Serial.print("Topic: ");
-  Serial.println(topic);
-  Serial.print("Message: ");
-  String _mess = "";
-  String _topic = (String) topic;
+  StaticJsonDocument<256> jsonRecv;
+  deserializeJson(jsonRecv, message);
+  JsonObject object = jsonRecv.as<JsonObject>();
+  bool    power  = object["d"][0]["v"];
+  uint8_t temp   = (uint8_t) object["d"][1]["v"];
+  uint8_t fan    = fan_cfg(object["d"][2]["v"]);
   
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)message[i]);
-    _mess += (char)message[i];
-  }
-  Serial.println("");
-  
-  if ((_topic == AC_TOPIC) && (_mess == "AC_CONFIG")) {
-    ac_power = false;
-    ac_power_prev = false;
-    ac_temp = 25;
-    ac_configed = false;
+  if !(ac_power == power || ac_temp == temp || ac_fan == fan) {
+    ac_power_prev = ac_power;
+    ac_power = power;
+    ac_temp = temp.toInt();
+    ac_fan = fan;
+
+    ir_send = true;
   }
 
-  if (_topic == AC_PROTOCOL) {
-    configed_protocol = _mess;
-    ac_configed = true;
-  }
-
-  if (ac_configed) ac_data(_topic, _mess);
+  // Serial.print("Topic: ");
+  // Serial.println(topic);
+  // Serial.print("Message: ");
+  // String _mess2 = "";
+  // String _topic = (String) topic;
+  
+  // for (int i = 0; i < length; i++) {
+  //   Serial.print((char)message[i]);
+  //   _mess += (char)message[i];
+  // }
+  // Serial.println("");
+  
 }
 
 void WifiTask (void *pvParameters) {
@@ -107,55 +102,6 @@ void WifiTask (void *pvParameters) {
       }
     }
     vTaskDelay(10);
-  }
-}
-
-void adc_init() {
-  adc1_config_width(ADC_WIDTH_12Bit);
-  adc1_config_channel_atten(get_adc1_chanel(ANALOG_CURRENT_PIN), ADC_ATTEN_6db);
-}
-
-adc1_channel_t get_adc1_chanel(uint8_t pin) {
-  adc1_channel_t channel;
-  switch (pin) {
-    case 32:
-      channel = ADC1_CHANNEL_4;
-      break;
-    case 33:
-      channel = ADC1_CHANNEL_5;
-      break;
-    case 34:
-      channel = ADC1_CHANNEL_6;
-      break;
-    case 35:
-      channel = ADC1_CHANNEL_7;
-      break;
-    case 36:
-      channel = ADC1_CHANNEL_0;
-      break;
-    case 37:
-      channel = ADC1_CHANNEL_1;
-      break;
-    case 38:
-      channel = ADC1_CHANNEL_2;
-      break;
-    case 39:
-      channel = ADC1_CHANNEL_3;
-      break;
-  }
-  return channel;
-}
-
-void CurrentMeasure (void *pvParameter) {
-  (void) pvParameter;
-  
-  float max_lim_current = 30;
-  adc_init();
-
-  for (;;) {
-    int val = analogRead(ANALOG_CURRENT_PIN);
-    float current = (float) val*max_lim_current/4095;
-    vTaskDelay(100);
   }
 }
 
@@ -346,156 +292,141 @@ void send2ac() {
   }
 }
 
-void ac_data(String _topic, String _mess) {
-  int intMess = _mess.toInt();
-  if (_topic == AC_POWER) {
-    ac_power_prev = ac_power;
-    if (_mess == "on") ac_power = true;
-    else ac_power = false;
-    ir_send = true;
+uint8_t fan_cfg(String fan) {
+  int intFan = fan.toInt();
+  
+  // DAIKIN, DAIKIN2, DAIKIN152, DAIKIN160, DAIKIN216
+  if ((configed_protocol == "DAIKIN") || (configed_protocol == "DAIKIN2") || (configed_protocol == "DAIKIN152") || (configed_protocol == "DAIKIN160") || (configed_protocol == "DAIKIN216")) {
+    if ((intFan >= 1) && (intFan <= 5)) return intFan;
+    else if (fan = "quiet") return kDaikinFanQuiet;
+    else return kDaikinFanAuto;
+  
+  // DAIKIN176
+  if (configed_protocol = "DAIKIN176") {
+    if ((intFan >= 1) && (intFan <= 3)) return intFan;
+    else return 3;  // FanMax
   }
-
-  if (_topic == AC_TEMP) {
-    ac_temp = (uint8_t) _mess.toInt();
-    ir_send = true;
+  // DAIKIN128
+  if (configed_protocol = "DAIKIN128") {
+    if (fan = "powerful") return kDaikin128FanPowerful;
+    else if (fan = "quiet") return kDaikin128FanQuiet;
+    else switch (intFan) {
+          case 1:
+            return kDaikin128FanLow;
+            break;
+          case 2:
+            return kDaikin128FanMed;
+            break;
+          case 3:
+            return kDaikin128FanHigh;
+            break;
+          default:
+            return kDaikin128FanAuto;
+            break;
+          }
   }
-  if (_topic == AC_FAN) {
-
-    // DAIKIN, DAIKIN2, DAIKIN152, DAIKIN160, DAIKIN216
-    if ((configed_protocol == "DAIKIN") || (configed_protocol == "DAIKIN2") || (configed_protocol == "DAIKIN152") || (configed_protocol == "DAIKIN160") || (configed_protocol == "DAIKIN216")) {
-      if ((intMess >= 1) && (intMess <= 5)) ac_fan = intMess;
-      else if (_mess = "quiet") ac_fan = kDaikinFanQuiet;
-      else ac_fan = kDaikinFanAuto;
+  // DAIKIN64
+  if (configed_protocol = "DAIKIN64") {
+    if (fan = "quiet") return kDaikin64FanQuiet;
+    else if (fan = "turbo") return kDaikin64FanTurbo;
+    else switch (intFan) {
+          case 1:
+            return kDaikin64FanLow;
+            break;
+          case 2:
+            return kDaikin64FanMed;
+            break;
+          case 3:
+            return kDaikin64FanHigh;
+            break;
+          default:
+            return kDaikin64FanAuto;
+            break;
+          }
+  }
+  // LG
+  if (configed_protocol = "LG") {
+    switch (intFan) {
+      case 1:
+        return kLgAcFanLowest;
+        break;
+      case 2:
+        return kLgAcFanLow;
+        break;
+      case 3:
+        return kLgAcFanMedium;
+        break;
+      case 4:
+        return kLgAcFanHigh;
+        break;
+      default:
+        return kLgAcFanAuto;
+        break;
     }
-    // DAIKIN176
-    if (configed_protocol = "DAIKIN176") {
-      if ((intMess >= 1) && (intMess <= 3)) ac_fan = intMess;
-      else ac_fan = 3;  // FanMax
-    }
-    // DAIKIN128
-    if (configed_protocol = "DAIKIN128") {
-      if (_mess = "powerful") ac_fan = kDaikin128FanPowerful;
-      else if (_mess = "quiet") ac_fan = kDaikin128FanQuiet;
-      else switch (intMess) {
-            case 1:
-              ac_fan = kDaikin128FanLow;
-              break;
-            case 2:
-              ac_fan = kDaikin128FanMed;
-              break;
-            case 3:
-              ac_fan = kDaikin128FanHigh;
-              break;
-            default:
-              ac_fan = kDaikin128FanAuto;
-              break;
-            }
-    }
-    // DAIKIN64
-    if (configed_protocol = "DAIKIN64") {
-      if (_mess = "quiet") ac_fan = kDaikin64FanQuiet;
-      else if (_mess = "turbo") ac_fan = kDaikin64FanTurbo;
-      else switch (intMess) {
-            case 1:
-              ac_fan = kDaikin64FanLow;
-              break;
-            case 2:
-              ac_fan = kDaikin64FanMed;
-              break;
-            case 3:
-              ac_fan = kDaikin64FanHigh;
-              break;
-            default:
-              ac_fan = kDaikin64FanAuto;
-              break;
-            }
-    }
-    // LG
-    if (configed_protocol = "LG") {
-      switch (intMess) {
-        case 1:
-          ac_fan = kLgAcFanLowest;
-          break;
-        case 2:
-          ac_fan = kLgAcFanLow;
-          break;
-        case 3:
-          ac_fan = kLgAcFanMedium;
-          break;
-        case 4:
-          ac_fan = kLgAcFanHigh;
-          break;
-        default:
-          ac_fan = kLgAcFanAuto;
-          break;
+  }
+  // MITSUBISHI_AC
+  if (configed_protocol = "MITSUBISHI_AC") {
+    if ((intFan >= 1) && (intFan <= 5)) return intFan;
+    else if (fan = "quiet") return 6;
+    else return 0;  // Auto
+  }
+  // MITSUBISHI136
+  if (configed_protocol = "MITSUBISHI136") {
+    if ((intFan >= 0) && (intFan <= 3)) return intFan;
+    else return 1;     
+  }
+  // MITSUBISHI112
+  if (configed_protocol = "MITSUBISHI112") {
+    switch (intFan) {
+      case 1:
+        return kMitsubishi112FanMin;
+        break;
+      case 2:
+        return kMitsubishi112FanLow;
+        break;
+      case 3:
+        return kMitsubishi112FanMed;
+        break;
+      case 4:
+        return kMitsubishi112FanMax;
+        break;
+      default:
+        return kMitsubishi112FanLow;
+        break;
       }
-    }
-    // MITSUBISHI_AC
-    if (configed_protocol = "MITSUBISHI_AC") {
-      if ((intMess >= 1) && (intMess <= 5)) ac_fan = intMess;
-      else if (_mess = "quiet") ac_fan = 6;
-      else ac_fan = 0;  // Auto
-    }
-    // MITSUBISHI136
-    if (configed_protocol = "MITSUBISHI136") {
-      if ((intMess >= 0) && (intMess <= 3)) ac_fan = intMess;
-      else ac_fan = 1;     
-    }
-    // MITSUBISHI112
-    if (configed_protocol = "MITSUBISHI112") {
-      switch (intMess) {
-        case 1:
-          ac_fan = kMitsubishi112FanMin;
-          break;
-        case 2:
-          ac_fan = kMitsubishi112FanLow;
-          break;
-        case 3:
-          ac_fan = kMitsubishi112FanMed;
-          break;
-        case 4:
-          ac_fan = kMitsubishi112FanMax;
-          break;
-        default:
-          ac_fan = kMitsubishi112FanLow;
-          break;
-        }
-    }
-    // MITSUBISHI_HEAVY_152
-    if (configed_protocol = "MITSUBISHI_HEAVY_152") {
-      if ((intMess >= 1) && (intMess <= 4)) ac_fan = intMess;
-      else if (_mess = "econo") ac_fan = 6;
-      else if (_mess = "turbo") ac_fan = 8;
-      else ac_fan = 0;  // Auto
-    }
-    // MITSUBISHI_HEAVY_88
-    if (configed_protocol = "MITSUBISHI_HEAVY_88") {
-      if ((intMess >= 2) && (intMess <= 4)) ac_fan = intMess;
-      else if (_mess = "econo") ac_fan = 7;
-      else if (_mess = "turbo") ac_fan = 6;
-      else ac_fan = 0;  // Auto
-    }
-    // SHARP
-    if (configed_protocol = "SHARP") {
-      switch (intMess) {
-        case 1:
-          ac_fan = kSharpAcFanMin;
-          break;
-        case 2:
-          ac_fan = kSharpAcFanMed;
-          break;
-        case 3:
-          ac_fan = kSharpAcFanHigh;
-          break;
-        case 4:
-          ac_fan = kSharpAcFanMax;
-          break;
-        default:
-          ac_fan = kSharpAcFanAuto;
-          break;
-        }
-    }
-
-    ir_send = true;
+  }
+  // MITSUBISHI_HEAVY_152
+  if (configed_protocol = "MITSUBISHI_HEAVY_152") {
+    if ((intFan >= 1) && (intFan <= 4)) return intFan;
+    else if (fan = "econo") return 6;
+    else if (fan = "turbo") return 8;
+    else return 0;  // Auto
+  }
+  // MITSUBISHI_HEAVY_88
+  if (configed_protocol = "MITSUBISHI_HEAVY_88") {
+    if ((intFan >= 2) && (intFan <= 4)) return intFan;
+    else if (fan = "econo") return 7;
+    else if (fan = "turbo") return 6;
+    else return 0;  // Auto
+  }
+  // SHARP
+  if (configed_protocol = "SHARP") {
+    switch (intFan) {
+      case 1:
+        return kSharpAcFanMin;
+        break;
+      case 2:
+        return kSharpAcFanMed;
+        break;
+      case 3:
+        return kSharpAcFanHigh;
+        break;
+      case 4:
+        return kSharpAcFanMax;
+        break;
+      default:
+        return kSharpAcFanAuto;
+        break;
+      }
   }
 }
