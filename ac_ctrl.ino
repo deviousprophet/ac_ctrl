@@ -55,15 +55,17 @@ void callback(char* topic, byte* message, unsigned int length) {
   StaticJsonDocument<256> jsonRecv;
   deserializeJson(jsonRecv, message);
   JsonObject object = jsonRecv.as<JsonObject>();
-  bool    power  = object["d"][0]["v"];
-  uint8_t temp   = (uint8_t) object["d"][1]["v"];
-  uint8_t fan    = fan_cfg(object["d"][2]["v"]);
+  bool _power = object["d"][0]["v"];
+  const char* _temp = object["d"][1]["v"];
+  const char* _fan = object["d"][2]["v"];
+
   
-  if !(ac_power == power || ac_temp == temp || ac_fan == fan) {
+  
+  if (!((ac_power == _power) || (ac_temp == _temp) || (ac_fan == _fan))) {
     ac_power_prev = ac_power;
-    ac_power = power;
-    ac_temp = temp.toInt();
-    ac_fan = fan;
+    ac_power = _power;
+    ac_temp = _temp;
+    ac_fan = _fan;
 
     ir_send = true;
   }
