@@ -300,7 +300,7 @@ uint8_t fan_cfg(String fan) {
     if ((intFan >= 1) && (intFan <= 5)) return intFan;
     else if (fan = "quiet") return kDaikinFanQuiet;
     else return kDaikinFanAuto;
-  
+  }
   // DAIKIN176
   if (configed_protocol = "DAIKIN176") {
     if ((intFan >= 1) && (intFan <= 3)) return intFan;
