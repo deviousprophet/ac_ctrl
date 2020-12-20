@@ -56,31 +56,35 @@ void callback(char* topic, byte* message, unsigned int length) {
   deserializeJson(jsonRecv, message);
   JsonObject object = jsonRecv.as<JsonObject>();
   bool _power = object["d"][0]["v"];
-  const char* _temp = object["d"][1]["v"];
-  const char* _fan = object["d"][2]["v"];
-
-  
-  
-  if (!((ac_power == _power) || (ac_temp == _temp) || (ac_fan == _fan))) {
-    ac_power_prev = ac_power;
-    ac_power = _power;
-    ac_temp = _temp;
-    ac_fan = _fan;
-
-    ir_send = true;
+  if (_power) {
+    Serial.println("yes");
+  } else {
+    Serial.println("no");
   }
-
-  // Serial.print("Topic: ");
-  // Serial.println(topic);
-  // Serial.print("Message: ");
-  // String _mess2 = "";
-  // String _topic = (String) topic;
-  
-  // for (int i = 0; i < length; i++) {
-  //   Serial.print((char)message[i]);
-  //   _mess += (char)message[i];
-  // }
-  // Serial.println("");
+//  const char* _temp_char = object["d"][1]["v"];
+//  String _temp = _temp_char;
+//  const char* _fan = object["d"][2]["v"];
+//
+//  if (!((ac_power == _power) && (ac_temp == (uint8_t) _temp.toInt()) && (ac_fan == (uint8_t) fan_cfg(_fan)))) {
+//    ac_power_prev = ac_power;
+//    ac_power = _power;
+//    ac_temp = (uint8_t) _temp.toInt();
+//    ac_fan = (uint8_t) fan_cfg(_fan);
+//
+//    ir_send = true;
+//  }
+//
+//  Serial.print("Topic: ");
+//  Serial.println(topic);
+//  Serial.print("Message: ");
+//  String _mess = "";
+//  String _topic = (String) topic;
+//  
+//  for (int i = 0; i < length; i++) {
+//    Serial.print((char)message[i]);
+//    _mess += (char)message[i];
+//  }
+//  Serial.println("");
   
 }
 
