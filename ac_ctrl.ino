@@ -56,12 +56,11 @@ void callback(char* topic, byte* message, unsigned int length) {
   deserializeJson(jsonRecv, message);
   JsonObject object = jsonRecv.as<JsonObject>();
   
-  bool _power = object["d"][0]["v"];
+  bool _power = object["state"];
   
-  const char* _temp_char = object["d"][1]["v"];
-  uint8_t _temp = (uint8_t) ((String) _temp_char).toInt();
+  uint8_t _temp = (uint8_t) object["temp"];
   
-  const char* _fan_char = object["d"][2]["v"];
+  const char* _fan_char = object["fan"];
   uint8_t _fan = fan_cfg((String) _fan_char);
 
   ac_power_prev = ac_power;

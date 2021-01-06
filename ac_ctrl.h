@@ -38,7 +38,7 @@ String supported_protocol[] = {
     "SHARP"};
 
 String  configed_protocol;
-bool    ac_configed = false;
+bool    ac_configed;
 bool    ir_send = false;
 
 bool    ac_power = false;
@@ -65,7 +65,7 @@ const char* mqtt_server = "test.mosquitto.org";
 const int   mqtt_port = 1883;
 
 const char* sub_topic = "816db8b17b84e848/command";
-const char* pub_topic = "json/respond";
+const char* pub_topic = "816db8b17b84e848/respond";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
