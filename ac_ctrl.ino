@@ -3,6 +3,9 @@
 void setup() {
   Serial.begin(115200, SERIAL_8N1);
   while(!Serial) delay(50);
+
+  adc_setup();
+  
   assert(irutils::lowLevelSanityCheck() == 0); 
 #if DECODE_HASH
   irrecv.setUnknownThreshold(kMinUnknownSize);
@@ -43,10 +46,30 @@ void loop() {
     if (description.length()) Serial.println(D_STR_MESGDESC ": " + description);
     yield();
   }
+  
   if (ir_send) {
+    char buf[256];
+    StaticJsonDocument<256> jsonSend;
+    
     if (ac_configed) send2ac();
-    delay(500);
-    ir_send = false;
+    delay(1000);
+    
+    double irms_now = irms();
+    Serial.print("Irms: ");
+    Serial.print(irms_now);
+    Serial.println("A");
+    
+    jsonSend["apikey"] = "75bbd81213c3a3a3";
+    jsonSend["channels"][0]["localId"] = "state";
+    jsonSend["channels"][0]["value"] = ac_power;
+    jsonSend["channels"][1]["localId"] = "temp";
+    jsonSend["channels"][1]["value"] = ac_temp;
+    jsonSend["channels"][2]["localId"] = "fan";
+    jsonSend["channels"][2]["value"] = ac_fan_char;
+    jsonSend["channels"][3]["localId"] = "current";
+    jsonSend["channels"][3]["value"] = irms_now;
+    serializeJson(jsonSend, buf);
+    if (client.publish(pub_topic, buf, false)) ir_send = false;
   }
   client.loop();
 }
@@ -57,9 +80,7 @@ void callback(char* topic, byte* message, unsigned int length) {
   JsonObject object = jsonRecv.as<JsonObject>();
   
   bool _power = object["state"];
-  
   uint8_t _temp = (uint8_t) object["temp"];
-  
   const char* _fan_char = object["fan"];
   uint8_t _fan = fan_cfg((String) _fan_char);
 
@@ -67,7 +88,8 @@ void callback(char* topic, byte* message, unsigned int length) {
   ac_power = _power;
   ac_temp = _temp;
   ac_fan = _fan;
-
+  ac_fan_char = _fan_char;
+  
   ir_send = true;
   
 //  Serial.print("Topic: ");
@@ -430,4 +452,52 @@ uint8_t fan_cfg(String fan) {
         break;
       }
   }
+}
+
+adc1_channel_t get_adc1_chanel(uint8_t pin) {
+  adc1_channel_t chan;
+  switch (pin) {
+    case 32:
+      chan = ADC1_CHANNEL_4;
+      break;
+    case 33:
+      chan = ADC1_CHANNEL_5;
+      break;
+    case 34:
+      chan = ADC1_CHANNEL_6;
+      break;
+    case 35:
+      chan = ADC1_CHANNEL_7;
+      break;
+    case 36:
+      chan = ADC1_CHANNEL_0;
+      break;
+    case 37:
+      chan = ADC1_CHANNEL_1;
+      break;
+    case 38:
+      chan = ADC1_CHANNEL_2;
+      break;
+    case 39:
+      chan = ADC1_CHANNEL_3;
+      break;
+  }
+  return chan;
+}
+
+void adc_setup() {
+ adc1_config_width(ADC_WIDTH_12Bit);
+ adc1_config_channel_atten(get_adc1_chanel(ADC_PIN), ADC_ATTEN_6db );
+}
+
+double irms() {
+  double I1 = 0;
+  double I2 = 0;
+  for(int i = 0; i < MAX_ADC_SAMPLE; i++) {
+    double val = analogRead(33);
+    I1 += val*val;
+    I2 += val;
+  }
+  double irms = sqrt(I1/MAX_ADC_SAMPLE - (I2/MAX_ADC_SAMPLE)*(I2/MAX_ADC_SAMPLE))/IRMS_SCALE;
+  return irms;
 }
